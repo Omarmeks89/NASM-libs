@@ -14,6 +14,7 @@
 
 %macro __scall_errc_scan 0			; using for errcode handling
 						; we can destroy ECX (CDECL)
+%ifdef OS_LNX
 		mov ecx, eax			; eax contains syscall res code
 		and ecx, SYSC_ERRC		; fetch errcode
 		cmp ecx, SYSC_ERRC
@@ -25,9 +26,15 @@
 		%error syscall crash		; TODO refactor here...
 		%endif
 %%no_err:	xor ecx, ecx			; 0 in ecx if no err
+%elifdef OS_BSD
+		; ...
+%else
+%error System not selected. Use -dOS_LNX | -dOS_BSD for OS choice.
+%endif
 %endmacro
 
 %macro __chk_fd_valid 1
+%ifdef OS_LNX
 		mov eax, %1			; we can use eax because we control it here
 		cmp eax, INV_FD
 		jnz %%fd_valid
@@ -36,12 +43,23 @@
 		%error Invalid or closed fd for <read>
 		%endif
 %%fd_valid:	
+%elifdef OS_BSD
+		; ...
+%endif
 %endmacro
 
 %macro _scall_exit 1				; 1st param is exit-code 
+%ifdef OS_LNX
 		mov eax, 1			; syscall no
 		mov ebx, %1			; status code for OS
 		int 80h
+%elifdef OS_BSD
+		push dword %1			; we use status code as a param
+		mov eax, 1
+		push eax
+		int 80h
+		add esp, (%0+1)*4		; clear stack
+%endif
 %endmacro
 
 %macro _scall_read 3
