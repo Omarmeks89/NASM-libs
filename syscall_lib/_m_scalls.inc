@@ -28,6 +28,7 @@
 %%no_err:	xor ecx, ecx			; 0 in ecx if no err
 %elifdef OS_BSD
 		; ...
+		; jc %%bsd_fail			; BSD use CF if syscall failed
 %else
 %error System not selected. Use -dOS_LNX | -dOS_BSD for OS choice.
 %endif
