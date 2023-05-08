@@ -65,8 +65,19 @@
 		__scall_errc_scan
 %endmacro
 
-%macro _scall_open 3
+%macro _scall_open 2-3
+		mov eax, 5
+		mov ebx, %1			; file path
+		mov ecx, %2			; use mode
+		cmp %0, 3
+		jnge %%scall
+		mov edx, %3
+%%scall:	int 80h				; if success, fd will be in eax
+		__scall_errc_scan
 %endmacro
 
 %macro _scall_close 1
+		mov eax, 6
+		mov ebx, %1			; fd to close
+		int 80h
 %endmacro
