@@ -11,9 +11,6 @@
 
 %assign		SYSC_ERRC 0xfffff000h		; syscall errcode i386
 %assign		INV_FD 0xffffffffh		; eq to -1
-%assign		O_RDONLY 000h
-%assign		O_WRONLY 001h
-%assign		O_RDWR 002h
 
 %macro __scall_errc_scan 0			; using for errcode handling
 						; we can destroy ECX (CDECL)
@@ -31,8 +28,7 @@
 %endmacro
 
 %macro __chk_fd_valid 1
-		mov ebx, %1
-		mov eax, ebx			; we can use eax because we control it here
+		mov eax, %1			; we can use eax because we control it here
 		cmp eax, INV_FD
 		jnz %%fd_valid
 		mov eax, ~00h
@@ -46,34 +42,31 @@
 		mov eax, 1			; syscall no
 		mov ebx, %1			; status code for OS
 		int 80h
-		__scall_errc_scan
 %endmacro
 
 %macro _scall_read 3
-		__chk_fd_valid %1		; is it correct to handle fd here?
-		cmp eax, ~00h
-		jz %%done
 		mov eax, 3			; syscall no
+		mov ebx, %1			; load fd for reading
 		mov ecx, %2			; addr
 		mov edx, %3			; len bytes
 		int 80h
-		test eax, eax			; check	EOF/EOL
+		test eax, eax			; check EOF
 		jz %%done			;
 		__scall_errc_scan		; syscall res handling
 %%done:		
 %endmacro
 
 %macro _scall_write 3
-		__chk_fd_valid %1		; after we have inst ebx with arg %1
-		cmp eax, ~00h
-		jz %%done
 		mov eax, 4			; syscall no
+		mov ebx, %1
 		mov ecx, %2			; addr
 		mov edx, %3			; bytes cnt to write
 		int 80h
 		__scall_errc_scan
-%%done:		
 %endmacro
 
 %macro _scall_open 3
+%endmacro
+
+%macro _scall_close 1
 %endmacro
