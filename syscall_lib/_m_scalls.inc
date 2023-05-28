@@ -22,8 +22,8 @@
 ;    ECX will contain errcode, other case will be equal to 0.
 
 
-%assign		SYSC_ERRC 0xfffff000h		; syscall errcode i386
-%assign		INV_FD 0xffffffffh		; eq to -1
+%assign		SYSC_ERRC 0xfffff000		; syscall errcode i386
+%assign		INV_FD 0xffffffff
 
 %macro __scall_errc_scan 0			; using for errcode handling
 						; we can destroy ECX (CDECL)
@@ -90,9 +90,6 @@
 		int 80h
 		test eax, eax			; check EOF
 		jz %%done			;
-		%ifdef DEBUG
-		%error Reading wasn`t done.
-		%endif
 		__scall_errc_scan		; syscall res handling
 %%done:		xor ecx, ecx
 %elifdef OS_BSD
@@ -105,9 +102,6 @@
 		int 80h
 		test eax, eax			; check EOF
 		jz %%bsd_done
-		%ifdef DEBUG
-		%error Reading wasn`t done.
-		%endif
 		__scall_errc_scan		; check errors before resume stack
 %%bsd_done:	add esp, (%0+1)*4		; clear stack
 %else
