@@ -7,17 +7,13 @@
 ;	3) write - #4
 ;	4) open - #5
 ;	5) close - #6
-; CONVETION:
 ;
 ; This is a basic (simple / naive) implementation of 
-; Linux & FreeBSD syscalls like: open, close, read, write, close
-; and exit. Offcourse shouldn`t use it for app developing
+; Linux & FreeBSD syscalls like: open, close, read, write,
+; and exit. Of course shouldn`t use it for app developing
 ; purposes only, like me, for educational purposes.
-; Realisation will be changed step by step, so now it`s just 
-; my first asknowlegment with OS syscalls.
 ;
-; Uses:
-;  - EAX as syscall no accumulator, if error occured EAX
+;  - EAX as syscall_no accumulator, if error occured EAX
 ;    will contain status code -1, successfull cases EAX
 ;    will contain bytes count or 0 (read), fd num in open.
 ;  - EBX as fd descriptor
@@ -94,6 +90,9 @@
 		int 80h
 		test eax, eax			; check EOF
 		jz %%done			;
+		%ifdef DEBUG
+		%error Reading wasn`t done.
+		%endif
 		__scall_errc_scan		; syscall res handling
 %%done:		xor ecx, ecx
 %elifdef OS_BSD
