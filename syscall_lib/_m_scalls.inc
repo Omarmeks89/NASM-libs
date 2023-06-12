@@ -25,6 +25,10 @@
 %assign		SYSC_ERRC 0xfffff000		; syscall errcode i386
 %assign		INV_FD 0xffffffff
 
+%ifndef OS_LNX || OS_BSD
+%error System not selected. Use -dOS_LNX | -dOS_BSD for OS choice.
+%endif
+
 %macro __scall_errc_scan 0			; using for errcode handling
 						; we can destroy ECX (CDECL)
 %ifdef OS_LNX
@@ -46,8 +50,6 @@
 %%bsd_fail:	mov ecx, eax			; move err code to ecx, then check it
 		mov eax, ~00h			; move -1 to eax as fail status code
 %%done:		
-%else
-%error System not selected. Use -dOS_LNX | -dOS_BSD for OS choice.
 %endif
 %endmacro
 
@@ -60,8 +62,6 @@
 		%error Invalid or closed fd.
 		%endif
 %%fd_valid:	xor eax, eax			; anyway eax was broken
-%else
-%error System not selected. Use -dOS_LNX | -dOS_BSD for OS choice.
 %endif
 %endmacro
 
@@ -76,8 +76,6 @@
 		push eax
 		int 80h
 		add esp, (%0+1)*4		; clear stack
-%else
-%error System not selected. Use -dOS_LNX | -dOS_BSD for OS choice.
 %endif
 %endmacro
 
@@ -104,8 +102,6 @@
 		jz %%bsd_done
 		__scall_errc_scan		; check errors before resume stack
 %%bsd_done:	add esp, (%0+1)*4		; clear stack
-%else
-%error System not selected. Use -dOS_LNX | -dOS_BSD for OS choice.
 %endif
 %endmacro
 
@@ -127,8 +123,6 @@
 		int 80h
 		__scall_errc_code		; check errors before resume stack
 		add esp, (%0+1)*4
-%else
-%error System not selected. Use -dOS_LNX | -dOS_BSD for OS choice.
 %endif
 %endmacro
 
@@ -152,8 +146,6 @@
 		int 80h
 		__scall_errc_scan
 		add esp, (%0+1)*4
-%else
-%error System not selected. Use -dOS_LNX | -dOS_BSD for OS choice.
 %endif
 %endmacro
 
@@ -170,7 +162,5 @@
 		int 80h
 		__scall_errc_scan
 		add esp, 8
-%else
-%error System not selected. Use -dOS_LNX | -dOS_BSD for OS choice.
 %endif
 %endmacro
