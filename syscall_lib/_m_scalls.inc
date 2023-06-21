@@ -1,4 +1,4 @@
-; syscalls macro realization (NASM)
+ syscalls macro realization (NASM)
 ; using -> %include "_m_scalls.inc"
 
 ; relized:
