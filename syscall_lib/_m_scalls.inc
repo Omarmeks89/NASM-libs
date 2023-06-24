@@ -1,4 +1,4 @@
- syscalls macro realization (NASM)
+; syscalls macro realization (NASM)
 ; using -> %include "_m_scalls.inc"
 
 ; relized:
@@ -39,9 +39,6 @@
 		mov ecx, eax			; if err, ecx`ll contain a syserrcode
 		neg ecx				; inv ecx with 2 complement (as positive int)
 		mov eax, ~00h			; -1 in eax
-		%ifdef DEBUG
-		%error err in syscall		; TODO refactor here...
-		%endif
 %%no_err:	xor ecx, ecx			; 0 in ecx if no err
 %elifdef OS_BSD
 		jc %%bsd_fail			; BSD use CF if syscall failed
@@ -58,11 +55,7 @@
 		cmp eax, INV_FD			; invalid fd always lower as zero
 		jnz %%fd_valid
 		mov eax, ~00h			; if fd invalid we put -1 into eax as st code
-		%ifdef DEBUG
-		%error Invalid or closed fd.
-		%endif
 %%fd_valid:	xor eax, eax			; anyway eax was broken
-%endif
 %endmacro
 
 %macro _scall_exit 1				; 1st param is exit-code 
@@ -128,13 +121,14 @@
 
 %macro _scall_open 2-3
 %ifdef OS_LNX
-		mov eax, 5
 		mov ebx, %1			; file path
 		mov ecx, %2			; use mode
-		cmp %0, 3
+		mov eax, %0
+		cmp eax, dword 3
 		jnge %%scall
 		mov edx, %3			; if we have file creation mode
-%%scall:	int 80h				; if success, fd will be in eax
+%%scall:	mov eax, 5
+		int 80h				; if success, fd will be in eax
 		__scall_errc_scan
 %elifdef OS_BSD
 		%rep %0
@@ -163,4 +157,15 @@
 		__scall_errc_scan
 		add esp, 8
 %endif
+%endmacro
+
+%macro check_o_creat_f 2
+		mov eax, %1			; mov oflag to regr
+		and eax, %2			; it`s a O_CREAT value 
+		cmp eax, %2			; set wished bits
+		jz .o_creat_inst
+		xor eax, eax
+		jmp short .done_check
+.o_creat_inst	mov eax, 1			; it`s most easy as bits shift with cl reg
+.done_check	nop
 %endmacro
