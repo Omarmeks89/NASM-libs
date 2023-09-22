@@ -52,10 +52,10 @@ s_read:		push ebp
 s_open:		push ebp
 		mov ebp, esp
 		push ebx						; bcs we destoroy ebx
-		check_o_creat_f [ebp + 12], so_creat			; check O_CREAT exists
+		check_o_creat_f [ebp + 12], [so_creat]			; check O_CREAT exists
 		cmp eax, 1
 		jz .mode_found
-		_scall_open [ebp + 8], [ebp + 12], so_rdwr_d
+		_scall_open [ebp + 8], [ebp + 12], [so_rdwr_d]
 		jmp .to_exit
 .mode_found	_scall_open [ebp + 8], [ebp + 12], [ebp + 16]
 .to_exit	test ecx, ecx

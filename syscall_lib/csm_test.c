@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 	else {
 		s_write(s_stdout, "done!\n", 6);
 	}
+	/* here is error in valgrind because of diff betw int and FILE struct as wished. */
 	ret = s_close(fd);
 	return ret;
 }
